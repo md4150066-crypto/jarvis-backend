@@ -22,101 +22,6 @@ jobs:
         sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev libffi-dev
         pip install --upgrade pip buildozer cython kivy requests
 
-    - name: Generate Jarvis App Main File
-      run: |
-        cat << 'EOF' > app_main.py
-        import os
-        import requests
-        from kivy.app import App
-        from kivy.uix.boxlayout import BoxLayout
-        from kivy.uix.label import Label
-        from kivy.uix.textinput import TextInput
-        from kivy.uix.button import Button
-        from kivy.uix.scrollview import ScrollView
-
-        class JarvisInterface(BoxLayout):
-            def __init__(self, **kwargs):
-                super().__init__(**kwargs)
-                self.orientation = 'vertical'
-                self.padding = 20
-                self.spacing = 15
-
-                self.header_layout = BoxLayout(size_hint_y=0.2, orientation='vertical')
-                self.reactor = Label(text="[ JARVIS MOBILE INTERFACE ACTIVE ]", color=(0, 0.8, 1, 1), font_size='18sp', bold=True)
-                self.header_layout.add_widget(self.reactor)
-                self.add_widget(self.header_layout)
-
-                self.scroll = ScrollView(size_hint_y=0.6)
-                self.chat_log = Label(text="Systems successfully compiled, sir. Awaiting instructions...\\n", color=(1, 1, 1, 1), font_size='16sp', halign='left', valign='top')
-                self.chat_log.bind(size=lambda s, w: setattr(self.chat_log, 'text_size', (self.chat_log.width, None)))
-                self.scroll.add_widget(self.chat_log)
-                self.add_widget(self.scroll)
-
-                self.input_layout = BoxLayout(size_hint_y=0.2, spacing=10)
-                self.user_input = TextInput(hint_text="Speak or type instruction, sir...", multiline=False, background_color=(0.1, 0.1, 0.1, 1), foreground_color=(1, 1, 1, 1))
-                self.user_input.bind(on_text_validate=self.process_command)
-                
-                self.send_btn = Button(text="SEND", size_hint_x=0.3, background_color=(0, 0.5, 0.8, 1))
-                self.send_btn.bind(on_press=self.process_command)
-                
-                self.input_layout.add_widget(self.user_input)
-                self.input_layout.add_widget(self.send_btn)
-                self.add_widget(self.input_layout)
-
-            def process_command(self, instance):
-                cmd = self.user_input.text.strip()
-                if not cmd: return
-                self.chat_log.text += f"\\n[YOU]: {cmd}"
-                self.user_input.text = ""
-                response = self.jarvis_interpreter(cmd)
-                self.chat_log.text += f"\\n[JARVIS]: {response}\\n"
-
-            def launch_app_directly(self, app_name):
-                app_name = app_name.lower().strip()
-                app_directory = {
-                    "instagram": "com.instagram.android", "snapchat": "com.snapchat.android",
-                    "whatsapp": "com.whatsapp", "youtube": "com.google.android.youtube",
-                    "facebook": "com.facebook.katana", "crex": "com.cricket.line",
-                    "photos": "com.google.android.apps.photos", "gallery": "com.google.android.apps.photos"
-                }
-                if app_name in app_directory:
-                    pkg = app_directory[app_name]
-                    os.system(f"monkey -p {pkg} -c android.intent.category.LAUNCHER 1 > /dev/null 2>&1")
-                    return f"Opening {app_name.capitalize()} workspace interface, sir."
-                return f"I could not map a direct file pathway for '{app_name}' inside my database, sir."
-
-            def ask_gemini_core(self, prompt):
-                try:
-                    url = "https://googleapis.com"
-                    system_instruction = "You are Jarvis, a powerful, brilliant personal AI assistant. Sufiyan is your creator and director. Keep answers highly concise, smart, direct, and always address him as sir."
-                    full_prompt = f"{system_instruction}\\n\\nUser Question: {prompt}"
-                    api_key = "AIzaSy" + "D4_7vU" + "m_QvH" + "kR8r7" + "zC_mN" + "w1Xy" + "2Z_A"
-                    payload = {"contents": [{"parts": [{"text": full_prompt}]}]}
-                    headers = {'Content-Type': 'application/json'}
-                    response = requests.post(f"{url}?key={api_key}", headers=headers, json=payload, timeout=20)
-                    if response.status_code == 200:
-                        return response.json()['candidates']['content']['parts']['text'].strip()
-                except Exception as e: return f"Network link stumbles: {str(e)}, sir."
-                return "I am experiencing minor network latency in my cognitive processors, sir."
-
-            def jarvis_interpreter(self, cmd):
-                c = cmd.lower().strip()
-                if c.startswith("call "):
-                    name = cmd[5:].strip()
-                    os.system(f"am start -a android.intent.action.VIEW tel:{name} > /dev/null 2>&1")
-                    return f"Opening cellular lines to call {name}, sir."
-                if c.startswith("open ") or c.startswith("launch "):
-                    target_app = c.replace("open ", "").replace("launch ", "").strip()
-                    return self.launch_app_directly(target_app)
-                return self.ask_gemini_core(cmd)
-
-        class JarvisAIApp(App):
-            def build(self): return JarvisInterface()
-
-        if __name__ == '__main__':
-            JarvisAIApp().run()
-        EOF
-
     - name: Generate Compiler Specifications Config
       run: |
         cat << 'EOF' > buildozer.spec
@@ -142,7 +47,6 @@ jobs:
 
     - name: Run Buildozer Compiler
       run: |
-        export BUILDOZER_BIN=app_main.py
         buildozer android debug
 
     - name: Upload Completed App File Installer
