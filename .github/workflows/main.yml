@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - name: Checkout Repository Code
       uses: actions/checkout@v4
@@ -19,7 +19,7 @@ jobs:
     - name: Install Android Compiler Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev libffi-dev
+        sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
         pip install --upgrade pip buildozer cython kivy requests
 
     - name: Generate Compiler Specifications Config
@@ -27,19 +27,20 @@ jobs:
         cat << 'EOF' > buildozer.spec
         [app]
         title = Jarvis AI
-        package.name = jarvis
+        package.name = jarvisai
         package.domain = com.sufiyan
-        source.dir = src
+        source.dir = .
         source.include_exts = py,png,json
         version = 1.0
-        requirements = python3,kivy,requests
+        requirements = python3,kivy==2.3.0,requests,urllib3,certifi,openssl
         orientation = portrait
         fullscreen = 1
-        android.permissions = INTERNET, CALL_PHONE, SYSTEM_ALERT_WINDOW
+        android.permissions = INTERNET
         android.api = 33
         android.minapi = 21
         android.archs = arm64-v8a
-        paddles = False
+        paddles = false
+
         [buildozer]
         log_level = 2
         warn_on_root = 0
@@ -49,7 +50,7 @@ jobs:
       run: |
         buildozer android debug
 
-    - name: Upload Completed App File Installer
+    - name: Upload Completed App file (APK)
       uses: actions/upload-artifact@v4
       with:
         name: Jarvis-AI-App-Installer
