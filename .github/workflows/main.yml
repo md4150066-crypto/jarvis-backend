@@ -16,10 +16,11 @@ jobs:
       with:
         python-version: '3.11'
 
+    # Swapped libtinfo5 for the modern libtinfo6 package supported by Ubuntu 24.04
     - name: Install Android Compiler Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+        sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev
         pip install --upgrade pip buildozer cython kivy requests
 
     - name: Generate Compiler Specifications Config
