@@ -23,7 +23,7 @@ def ask_jarvis():
             if response.status_code == 200 and response.text.strip():
                 clean_reply = response.text.strip()
                 if "<html" not in clean_reply.lower() and "error" not in clean_reply.lower():
-                    # This ensures the output is always delivered as a valid JSON reply dictionary block
+                    # This wraps the string safely inside a proper JSON dictionary object
                     return jsonify({"reply": clean_reply})
         except Exception:
             continue
@@ -32,5 +32,3 @@ def ask_jarvis():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
-
-  
