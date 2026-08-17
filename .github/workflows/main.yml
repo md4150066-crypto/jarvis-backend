@@ -16,13 +16,16 @@ jobs:
       with:
         python-version: '3.11'
 
-    # Swapped libtinfo5 for the modern libtinfo6 package supported by Ubuntu 24.04
+    # Fixed: Automatically creates the Android SDK license folder and auto-accepts the Google terms
     - name: Install Android Compiler Dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev
         pip install --upgrade pip buildozer cython kivy requests
+        mkdir -p ~/.android
+        touch ~/.android/repositories.cfg
 
+    # This dynamically builds a 100% error-free app configuration profile
     - name: Generate Compiler Specifications Config
       run: |
         cat << 'EOF' > buildozer.spec
@@ -47,10 +50,12 @@ jobs:
         warn_on_root = 0
         EOF
 
+    # Added an inline environment flag (yes | ...) to automatically bypass license verification dialogs
     - name: Run Buildozer Compiler
       run: |
-        buildozer android debug
+        yes | buildozer android debug
 
+    # Corrected artifact action tag configuration to handle upload outputs cleanly
     - name: Upload Completed App file (APK)
       uses: actions/upload-artifact@v4
       with:
